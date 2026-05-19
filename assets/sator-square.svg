@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-labelledby="title desc">
+  <title id="title">Sator Arepo Square</title>
+  <desc id="desc">The classical five-by-five Latin word square: Sator, Arepo, Tenet, Opera, Rotas.</desc>
+  <rect width="600" height="600" fill="#f5f0e6"/>
+  <rect x="34" y="34" width="532" height="532" fill="none" stroke="#1d1a16" stroke-width="6"/>
+  <g stroke="#1d1a16" stroke-width="2">
+    <path d="M140 34v532"/>
+    <path d="M246 34v532"/>
+    <path d="M354 34v532"/>
+    <path d="M460 34v532"/>
+    <path d="M34 140h532"/>
+    <path d="M34 246h532"/>
+    <path d="M34 354h532"/>
+    <path d="M34 460h532"/>
+  </g>
+  <g fill="#1d1a16" font-family="Georgia, 'Times New Roman', serif" font-size="54" font-weight="700" text-anchor="middle" dominant-baseline="middle">
+    <text x="87" y="87">S</text><text x="193" y="87">A</text><text x="300" y="87">T</text><text x="407" y="87">O</text><text x="513" y="87">R</text>
+    <text x="87" y="193">A</text><text x="193" y="193">R</text><text x="300" y="193">E</text><text x="407" y="193">P</text><text x="513" y="193">O</text>
+    <text x="87" y="300">T</text><text x="193" y="300">E</text><text x="300" y="300">N</text><text x="407" y="300">E</text><text x="513" y="300">T</text>
+    <text x="87" y="407">O</text><text x="193" y="407">P</text><text x="300" y="407">E</text><text x="407" y="407">R</text><text x="513" y="407">A</text>
+    <text x="87" y="513">R</text><text x="193" y="513">O</text><text x="300" y="513">T</text><text x="407" y="513">A</text><text x="513" y="513">S</text>
+  </g>
+</svg>

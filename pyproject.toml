@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arepo"
+version = "0.3.0"
+authors = [
+    {name = "Alexander Kolpakov"},
+    {name = "Aidan Rocke"},
+    {name = "Humam al'Jammas"},
+]
+description = "Benford's Law-based AI text detection using transformer embeddings"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+keywords = ["ai-detection", "benford-law", "nlp", "transformers"]
+dependencies = [
+    "torch>=2.0.0",
+    "transformers>=4.30.0",
+    "scipy>=1.10.0",
+    "numpy>=1.24.0",
+    "matplotlib>=3.7.0",
+    "scikit-learn>=1.2.0",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0", "flask>=2.3.0"]
+docs = ["sphinx>=6.0", "sphinx-rtd-theme>=1.2"]
+web = ["flask>=2.3.0"]
+all = ["pytest>=7.0", "sphinx>=6.0", "sphinx-rtd-theme>=1.2", "datasets>=2.14", "flask>=2.3.0"]
+
+[project.scripts]
+arepo-download = "arepo.download:main"
+arepo-web = "arepo.web:main"
+arepo-evaluate = "arepo.evaluate_moe:main"
+arepo-guardrails = "arepo.guardrail_evaluation:main"
+arepo-mixture = "arepo.mixture_experts:main"
+arepo-report = "arepo.document_report:main"
+arepo-renorm = "arepo.renorm_experiments:main"
+arepo-thresholds = "arepo.threshold_experiments:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+arepo = ["data/*.txt", "templates/*.html", "models/long_guardrail_4d_baseline_w120.npz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+norecursedirs = ["old_experiments"]
+markers = [
+    "unit: fast tests with no network or model dependencies",
+    "slow: integration tests that load transformer models",
+    "reproducibility: full benchmark pipeline tests",
+]

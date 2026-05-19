@@ -1,0 +1,80 @@
+name: Deploy Hugging Face Space
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: huggingface-space
+  cancel-in-progress: false
+
+env:
+  HF_SPACE_ID: akolpakov/SatorArepo
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: python -m pip install --upgrade huggingface_hub
+
+      - name: Prepare Docker Space payload
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/arepo-hf-space
+          mkdir -p /tmp/arepo-hf-space
+          git archive --format=tar HEAD | tar -x -C /tmp/arepo-hf-space
+          cp deploy/huggingface/Dockerfile /tmp/arepo-hf-space/Dockerfile
+          cp deploy/huggingface/.dockerignore /tmp/arepo-hf-space/.dockerignore
+          rm -rf /tmp/arepo-hf-space/.github /tmp/arepo-hf-space/deploy
+          python - <<'PY'
+          from pathlib import Path
+
+          metadata = "\n".join([
+              "---",
+              "title: Sator Arepo",
+              "colorFrom: gray",
+              "colorTo: indigo",
+              "sdk: docker",
+              "app_port: 7860",
+              "pinned: false",
+              "license: mit",
+              "---",
+              "",
+          ])
+          readme = Path("README.md").read_text(encoding="utf-8")
+          Path("/tmp/arepo-hf-space/README.md").write_text(
+              metadata + readme,
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "${HF_TOKEN}"
+          python - <<'PY'
+          import os
+          from huggingface_hub import HfApi
+
+          api = HfApi(token=os.environ["HF_TOKEN"])
+          api.upload_folder(
+              folder_path="/tmp/arepo-hf-space",
+              repo_id=os.environ["HF_SPACE_ID"],
+              repo_type="space",
+              commit_message="Redeploy Arepo GUI from GitHub Actions",
+              delete_patterns=[
+                  ".github/**",
+                  "deploy/**",
+              ],
+          )
+          PY

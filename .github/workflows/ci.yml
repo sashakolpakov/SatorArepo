@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main, evidence-design-sprint, "feature/**", "cleanup/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.11"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -e ".[test]"
+      - run: pytest -m unit -v
+
+  integration:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-models-${{ hashFiles('src/arepo/core.py') }}
+          restore-keys: hf-models-
+      - run: pip install -e ".[test]"
+      - run: pytest -m slow -v
+
+  server-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[web]"
+      - name: Start Flask server
+        run: |
+          python -m flask --app 'arepo.web:create_app(preload_models=False)' run --host 127.0.0.1 --port 5050 > server.log 2>&1 &
+          echo $! > server.pid
+      - name: Check health route
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:5050/health; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat server.log
+          exit 1
+      - name: Check demo corpus route
+        run: curl -fsS http://127.0.0.1:5050/demo-corpus
+      - name: Stop Flask server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill "$(cat server.pid)" || true
+          fi
+          cat server.log || true
+
+  reproducibility:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-models-${{ hashFiles('src/arepo/core.py') }}
+          restore-keys: hf-models-
+      - run: pip install -e ".[all]"
+      - run: pytest -m reproducibility -v
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visualizations
+          path: visualizations/

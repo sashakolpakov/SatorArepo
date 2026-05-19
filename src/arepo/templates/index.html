@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arepo Workbench</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: #050505;
+            background:
+                linear-gradient(135deg, #007c7c 0%, #007c7c 45%, #145a70 100%);
+            font-family: "MS Sans Serif", "Tahoma", system-ui, sans-serif;
+            font-size: 14px;
+        }
+        .desktop {
+            min-height: 100vh;
+            padding: 18px;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 14px;
+        }
+        .titlebar,
+        .taskbar {
+            border: 2px solid;
+            border-color: #ffffff #404040 #404040 #ffffff;
+            background: #c0c0c0;
+            box-shadow: 1px 1px 0 #000000;
+        }
+        .titlebar {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            padding: 3px;
+        }
+        .caption {
+            color: #ffffff;
+            background: linear-gradient(90deg, #000080, #1084d0);
+            font-weight: 700;
+            padding: 5px 8px;
+            letter-spacing: 0;
+        }
+        .window-buttons {
+            display: flex;
+            gap: 3px;
+            padding-left: 6px;
+        }
+        .window-buttons span,
+        button,
+        select {
+            border: 2px solid;
+            border-color: #ffffff #404040 #404040 #ffffff;
+            background: #c0c0c0;
+            color: #050505;
+            box-shadow: 1px 1px 0 #000000;
+        }
+        .window-buttons span {
+            width: 24px;
+            height: 22px;
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+        }
+        .workspace {
+            display: grid;
+            grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+            gap: 14px;
+            min-height: 0;
+        }
+        .panel {
+            border: 2px solid;
+            border-color: #ffffff #404040 #404040 #ffffff;
+            background: #c0c0c0;
+            box-shadow: 1px 1px 0 #000000;
+            min-width: 0;
+        }
+        .panel-head {
+            padding: 5px 8px;
+            color: #ffffff;
+            background: #000080;
+            font-weight: 700;
+        }
+        .panel-body {
+            padding: 10px;
+        }
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        button,
+        select {
+            min-height: 30px;
+            padding: 4px 10px;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        button:active {
+            border-color: #404040 #ffffff #ffffff #404040;
+            box-shadow: inset 1px 1px 0 #000000;
+        }
+        button:disabled {
+            color: #707070;
+            cursor: wait;
+        }
+        textarea {
+            width: 100%;
+            min-height: 390px;
+            resize: vertical;
+            padding: 10px;
+            border: 2px solid;
+            border-color: #404040 #ffffff #ffffff #404040;
+            background: #ffffff;
+            color: #050505;
+            font-family: "Courier New", monospace;
+            font-size: 14px;
+            line-height: 1.45;
+        }
+        textarea:focus,
+        select:focus,
+        button:focus {
+            outline: 1px dotted #000000;
+            outline-offset: -4px;
+        }
+        .status {
+            min-height: 22px;
+            color: #202020;
+            font-size: 12px;
+        }
+        .demo-list {
+            display: grid;
+            gap: 8px;
+        }
+        .demo-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border: 2px solid;
+            border-color: #404040 #ffffff #ffffff #404040;
+            background: #ffffff;
+        }
+        .demo-title {
+            font-weight: 700;
+        }
+        .demo-source {
+            font-size: 12px;
+            color: #404040;
+            margin-top: 2px;
+        }
+        .score-summary {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .meter {
+            padding: 10px;
+            border: 2px solid;
+            border-color: #404040 #ffffff #ffffff #404040;
+            background: #ffffff;
+        }
+        .meter .label {
+            font-size: 12px;
+            color: #303030;
+            margin-bottom: 4px;
+        }
+        .meter .value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .bar {
+            position: relative;
+            height: 18px;
+            margin-top: 8px;
+            border: 2px solid;
+            border-color: #404040 #ffffff #ffffff #404040;
+            background: linear-gradient(90deg, #008000, #ffff00, #d00000);
+        }
+        .marker {
+            position: absolute;
+            top: -5px;
+            width: 8px;
+            height: 26px;
+            background: #000000;
+            transform: translateX(-50%);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ffffff;
+            border: 2px solid;
+            border-color: #404040 #ffffff #ffffff #404040;
+        }
+        th,
+        td {
+            padding: 7px;
+            border: 1px solid #808080;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            color: #ffffff;
+            background: #000080;
+        }
+        .pill {
+            display: inline-block;
+            min-width: 130px;
+            padding: 3px 6px;
+            border: 1px solid #404040;
+            background: #efefef;
+            font-weight: 700;
+            text-align: center;
+        }
+        .likely_human { color: #006000; }
+        .likely_ai { color: #b00000; }
+        .uncertain { color: #806000; }
+        .non_identifiable { color: #404040; }
+        .hard_ai { color: #b00000; }
+        .hard_human { color: #006000; }
+        .soft_ai { color: #8a3000; }
+        .soft_human { color: #206020; }
+        .ambiguous { color: #404040; }
+        .subsection-title {
+            margin: 14px 0 7px;
+            font-weight: 700;
+        }
+        .error {
+            display: none;
+            margin-top: 10px;
+            padding: 8px;
+            color: #ffffff;
+            background: #9b0000;
+            border: 2px solid;
+            border-color: #ffffff #404040 #404040 #ffffff;
+        }
+        .error.visible { display: block; }
+        .taskbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 6px 8px;
+            font-size: 12px;
+        }
+        @media (max-width: 840px) {
+            .workspace,
+            .score-summary {
+                grid-template-columns: 1fr;
+            }
+            .desktop {
+                padding: 10px;
+            }
+            textarea {
+                min-height: 260px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="desktop">
+        <header class="titlebar">
+            <div class="caption">Arepo Workbench</div>
+            <div class="window-buttons" aria-hidden="true"><span>_</span><span>□</span><span>x</span></div>
+        </header>
+
+        <section class="workspace">
+            <aside class="panel">
+                <div class="panel-head">Reference Tests</div>
+                <div class="panel-body">
+                    <div id="demoList" class="demo-list"></div>
+                </div>
+            </aside>
+
+            <section class="panel">
+                <div class="panel-head">Text Analyzer</div>
+                <div class="panel-body">
+                    <div class="toolbar">
+                        <button id="analyzeBtn">Analyze</button>
+                        <button id="clearBtn">Clear</button>
+                        <span id="charCount" class="status">0 characters</span>
+                    </div>
+                    <textarea id="textInput" placeholder="Paste text here. Separate paragraphs with blank lines to get per-paragraph scores."></textarea>
+                    <div id="error" class="error"></div>
+
+                    <div id="results" style="display:none; margin-top:12px;">
+                        <div class="score-summary">
+                            <div class="meter">
+                                <div class="label">Document Evidence</div>
+                                <div id="docLabel" class="value">-</div>
+                            </div>
+                            <div class="meter">
+                                <div class="label">Human Score</div>
+                                <div id="docHuman" class="value">-</div>
+                            </div>
+                            <div class="meter">
+                                <div class="label">AI Score</div>
+                                <div id="docAi" class="value">-</div>
+                                <div class="bar"><div id="docMarker" class="marker"></div></div>
+                            </div>
+                        </div>
+                        <div class="score-summary">
+                            <div class="meter">
+                                <div class="label">Hard AI Window Coverage</div>
+                                <div id="hardAiCoverage" class="value">-</div>
+                            </div>
+                            <div class="meter">
+                                <div class="label">Hard Human Window Coverage</div>
+                                <div id="hardHumanCoverage" class="value">-</div>
+                            </div>
+                            <div class="meter">
+                                <div class="label">Ambiguous Window Coverage</div>
+                                <div id="ambiguousCoverage" class="value">-</div>
+                            </div>
+                        </div>
+                        <div class="subsection-title">Passages</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Passage</th>
+                                    <th>Evidence</th>
+                                    <th>Human</th>
+                                    <th>AI</th>
+                                    <th>Geom</th>
+                                </tr>
+                            </thead>
+                            <tbody id="passageRows"></tbody>
+                        </table>
+                        <div class="subsection-title">Window Evidence</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Window</th>
+                                    <th>Evidence</th>
+                                    <th>Human</th>
+                                    <th>AI</th>
+                                    <th>Geom</th>
+                                </tr>
+                            </thead>
+                            <tbody id="windowRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <footer class="taskbar">
+            <span>MoE evidence mode</span>
+        </footer>
+    </main>
+
+    <script>
+        const textInput = document.getElementById('textInput');
+        const charCount = document.getElementById('charCount');
+        const errorBox = document.getElementById('error');
+        const results = document.getElementById('results');
+        const passageRows = document.getElementById('passageRows');
+        const windowRows = document.getElementById('windowRows');
+        let corpus = [];
+
+        function pct(value) {
+            return (value * 100).toFixed(1) + '%';
+        }
+
+        function setError(message) {
+            errorBox.textContent = message;
+            errorBox.className = message ? 'error visible' : 'error';
+        }
+
+        function updateCount() {
+            const len = textInput.value.length;
+            charCount.textContent = len + ' character' + (len === 1 ? '' : 's');
+        }
+
+        function renderResults(data) {
+            const doc = data.document;
+            const summary = doc.evidence_summary || {};
+            results.style.display = 'block';
+            document.getElementById('docLabel').textContent = doc.label;
+            document.getElementById('docLabel').className = 'value ' + doc.verdict;
+            document.getElementById('docHuman').textContent = pct(doc.p_human);
+            document.getElementById('docAi').textContent = pct(doc.p_ai);
+            document.getElementById('docMarker').style.left = (doc.p_ai * 100) + '%';
+            document.getElementById('hardAiCoverage').textContent = pct(summary.hard_ai_fraction || 0);
+            document.getElementById('hardHumanCoverage').textContent = pct(summary.hard_human_fraction || 0);
+            document.getElementById('ambiguousCoverage').textContent = pct(summary.ambiguous_fraction || 0);
+
+            passageRows.innerHTML = '';
+            data.passages.forEach((p) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${p.index}. ${escapeHtml(p.title)}</strong><br>${p.chars} chars</td>
+                    <td><span class="pill ${p.evidence_class}">${evidenceLabel(p.evidence_class)}</span></td>
+                    <td>${pct(p.p_human)}</td>
+                    <td>${pct(p.p_ai)}</td>
+                    <td>${pct(p.geometric_confidence)}</td>
+                `;
+                passageRows.appendChild(row);
+            });
+
+            windowRows.innerHTML = '';
+            (data.windows || []).forEach((w) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${escapeHtml(w.title)}</strong><br>${w.start_word}-${w.end_word} words</td>
+                    <td><span class="pill ${w.evidence_class}">${evidenceLabel(w.evidence_class)}</span></td>
+                    <td>${pct(w.p_human)}</td>
+                    <td>${pct(w.p_ai)}</td>
+                    <td>${pct(w.geometric_confidence)}</td>
+                `;
+                windowRows.appendChild(row);
+            });
+        }
+
+        function evidenceLabel(value) {
+            return {
+                hard_ai: 'Hard AI',
+                hard_human: 'Hard Human',
+                soft_ai: 'Soft AI',
+                soft_human: 'Soft Human',
+                ambiguous: 'Ambiguous'
+            }[value] || value || '-';
+        }
+
+        function escapeHtml(value) {
+            return value.replace(/[&<>"']/g, (c) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[c]));
+        }
+
+        async function analyzePayload(payload) {
+            setError('');
+            results.style.display = 'none';
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = true;
+            btn.textContent = 'Working...';
+            try {
+                const resp = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json();
+                if (!resp.ok) {
+                    throw new Error(data.error || 'Analysis failed');
+                }
+                renderResults(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Analyze';
+            }
+        }
+
+        async function loadCorpus() {
+            const list = document.getElementById('demoList');
+            list.innerHTML = '';
+            const resp = await fetch('/demo-corpus', {cache: 'no-store'});
+            const data = await resp.json();
+            corpus = data.corpus || [];
+            corpus.forEach((item) => {
+                const row = document.createElement('div');
+                row.className = 'demo-item';
+                row.innerHTML = `
+                    <div>
+                        <div class="demo-title">${escapeHtml(item.title)}</div>
+                        <div class="demo-source">${escapeHtml(item.source)} · ${escapeHtml(item.kind)} · ${item.passages.length} passages</div>
+                    </div>
+                    <button>Load</button>
+                `;
+                row.querySelector('button').addEventListener('click', () => {
+                    textInput.value = item.passages.map((p) => p.text).join('\n\n');
+                    updateCount();
+                    analyzePayload({passages: item.passages});
+                });
+                list.appendChild(row);
+            });
+        }
+
+        document.getElementById('analyzeBtn').addEventListener('click', () => {
+            const text = textInput.value.trim();
+            if (text.length < 100) {
+                setError('Text must be at least 100 characters.');
+                return;
+            }
+            analyzePayload({text});
+        });
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            textInput.value = '';
+            updateCount();
+            setError('');
+            results.style.display = 'none';
+        });
+        textInput.addEventListener('input', updateCount);
+        updateCount();
+        loadCorpus().catch((err) => setError(err.message));
+    </script>
+</body>
+</html>
